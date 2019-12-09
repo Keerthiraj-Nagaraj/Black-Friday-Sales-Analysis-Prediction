@@ -1,2 +1,3 @@
 # Black-Friday-Sales-Analysis-Prediction
  
+In this project, I have used Black Friday sales data to predict the amount a given user can spend on a product of a specific category based on his/her demographic information. The target response “Purchase Amount” is a continuous variable, so regression models such as Multiple Linear Regression, Decision Trees, Random forest and XGBoost are trained to predict it based on the input features. K-fold cross validation is used for optimal hyperparameter selection and RMSE is used as the performance metric to test the regression models. The target response was also converted into binary form and classification models are trained to predict purchase level. Finally, promising results are presented in the form of ROC curves. 
