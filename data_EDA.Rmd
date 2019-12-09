@@ -1,0 +1,184 @@
+---
+title: "Data EDA"
+author: "keerthiraj"
+date: "11/11/2019"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+
+# Statistical Machine Learning Project (Fall 2019)
+
+## Exploratory data analysis
+
+### Initial setup
+
+```{r setup, include=FALSE}
+
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(dummies)
+library(fastDummies)
+
+data <- read_csv("Datasets/black friday sales/train.csv", na = "NA")
+
+```
+
+### Data summary
+
+```{r}
+
+summary(data)
+
+```
+
+
+
+
+### A look at the target response for first 100 data samples
+
+```{r}
+
+data.pur <- data$Purchase[1:100]
+plot(data.pur, type = 'b')
+```
+
+
+
+### Purchase Amount histogram
+
+```{r}
+
+ggplot(data) + geom_bar(mapping = aes(Purchase))
+
+```
+
+
+### Counting data entries for each Product ID
+
+```{r}
+prod_count <- data %>% 
+  group_by(Product_ID) %>%
+  count()
+
+```
+
+
+### Selecting Product ID with >1000 data entries
+
+```{r}
+
+selected.prod <- prod_count %>% 
+
+  arrange(desc(n)) %>%
+  
+  filter(n > 1400)
+
+ggplot(data = selected.prod) + geom_point(aes(seq(1:nrow(selected.prod)), n))
+```
+
+
+### Average Purchase amount Vs various features 
+
+```{r}
+
+data %>% 
+  
+  group_by(Gender) %>%
+  summarise(avg_purchase = mean(Purchase, na.rm = TRUE))
+
+
+```
+
+
+```{r}
+
+data %>% 
+  group_by(Age) %>%
+  summarise(avg_purchase = mean(Purchase, na.rm = TRUE))
+
+```
+
+```{r}
+
+data %>% 
+  group_by(Marital_Status) %>%
+  summarise(avg_purchase = mean(Purchase, na.rm = TRUE))
+
+```
+
+
+```{r}
+
+data %>% 
+  group_by(Stay_In_Current_City_Years) %>%
+  summarise(avg_purchase = mean(Purchase, na.rm = TRUE))
+
+```
+
+```{r}
+data %>% 
+  group_by(Occupation) %>%
+  summarise(avg_purchase = mean(Purchase, na.rm = TRUE))
+
+```
+
+
+
+### Converting Age groups and Stay in current city (years) into numerical features
+
+```{r}
+
+data <- subset(data, Product_ID %in% selected.prod$Product_ID)
+
+data <- subset(data, !Product_Category_1 %in% c(4, 12, 13, 19, 20))
+
+
+# converting age variable to numeric
+data$Age[data$Age == "0-17"] <- "15"
+data$Age[data$Age == "18-25"] <- "21"
+data$Age[data$Age == "26-35"] <- "30"
+data$Age[data$Age == "36-45"] <- "40"
+data$Age[data$Age == "46-50"] <- "48"
+data$Age[data$Age == "51-55"] <- "53"
+data$Age[data$Age == "55+"] <- "60"
+
+data$Age <- as.integer(data$Age)
+
+
+data$Stay_In_Current_City_Years[data$Stay_In_Current_City_Years == "4+"] <- "4"
+data$Stay_In_Current_City_Years <- as.integer(data$Stay_In_Current_City_Years)
+
+data$Gender[data$Gender == "F"] <- 0
+data$Gender[data$Gender == "M"] <- 1
+
+data$City_Category_A <- ifelse(data$City_Category == "A", 1, 0)
+data$City_Category_B <- ifelse(data$City_Category == "B", 1, 0)
+data$City_Category_C <- ifelse(data$City_Category == "C", 1, 0)
+
+data$City_Category_A <- as.factor(data$City_Category_A)
+data$City_Category_B <- as.factor(data$City_Category_B)
+data$City_Category_C <- as.factor(data$City_Category_C)
+
+data$Product_Category_2[is.na(data$Product_Category_2)] <- 0
+data$Product_Category_3[is.na(data$Product_Category_3)] <- 0
+
+data.final <- data[,!(names(data) %in% c("City_Category"))]
+
+summary(data.final)
+```
+
+
+
+```{r}
+
+write.csv(data.final, 'cleaned_data.csv')
+
+```
+
+
+
+
